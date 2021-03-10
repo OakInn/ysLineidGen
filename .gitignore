@@ -1,0 +1,11 @@
+# https://github.com/github/gitignore
+# Vim
+*.sw[a-z]
+*~
+.vs/
+
+# python
+__pycache__/
+.vscode/
+*.py[cod]
+*$py.class
