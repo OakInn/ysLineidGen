@@ -13,11 +13,11 @@ class ExtractorTest(unittest.TestCase):
 
     def test01ExtractLineid(self):
         sData = """
-        #Player: Good lord!!! WTF? #line:bacd12
-        Sally: WTF was that "WTF" for? #Need to think about the language here for kids sake
-        ##Sally: Don't swear on me here! Kids! #line:abcd12
+        #Player: Good Lord!!! #line:bacd12
+        Sally: Ha? #Need to think about the language here for kids sake
+        ##Sally: Don't call Him in vain! Kids! #line:abcd12
         Player: Our car is gone!!! #line:abcd13 #think here as well
-        Sally: Kids, shut your ears! WTF did you just say?! #line:ab01
+        Sally: Kids, shut your ears! What did you just say?! #line:ab01
         Player: Our car is gone!!! #line:abcd14 #line:abcd15
         Player: Our car is gone!!! ##line:abcd16 #line:abcd17
         Player: Our car is gone!!! ###line:abcd18 #line:abcd19
@@ -53,13 +53,13 @@ class ExtractorTest(unittest.TestCase):
         15:Sally: Yo! #comment #line:xxxxxx # comment #line:yyyyyy
         16:Sally: Yo! #comment #line: # comment #line:
         17:Sally: Yo! #line:xxxxxx comment
-        #line:ab01 #Sally: Kids, shut your ears! WTF did you just say?! #line:ab01
+        #line:ab01 #Sally: Kids, shut your ears! What did you just say?! #line:ab01
         """
 
         expectedComment = ["", "", ".", "...", "05: fully commented with text and lineid #line:bacd12",
         "Comment simple", "", "Comment", "Comment", "Comment", "comment", "comment",
         "comment ... # comment", "comment ...", "comment ... # comment #line:yyyyyy", 
-        "comment ... # comment #line:", "comment", "line:ab01 #Sally: Kids, shut your ears! WTF did you just say?! #line:ab01"]
+        "comment ... # comment #line:", "comment", "line:ab01 #Sally: Kids, shut your ears! What did you just say?! #line:ab01"]
 
         for i in range(len(expectedComment)):
             comment = Extractor.extractComment(sData.split("\n")[i])
