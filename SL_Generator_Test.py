@@ -24,11 +24,11 @@ title: Start
 <<if true>> #line:
     Player: Hey, Sally.                                                         #line:34
 Sally: Oh! Hi.
-    Sally: You snuck up on me. #comment
+    Sally: You snuck up on me. //comment
 Sally: Don't do that.
     <<else>>
 Player: Hey.                                                                    #line:305cd
-    #Sally: Hi. #line:305cde
+    //Sally: Hi. #line:305cde
 <<endif>>
     ===
 title: Start
@@ -40,7 +40,7 @@ I have [plural {$apples} one="an apple" other="% apples"]!
 <<set $monster to "your own hubris">>You accidentally stab yourself with the rock.    
 [[Dead]]
 <<set $light to "dim">> text <<set $monster to "bear">>
-#line: The wind blows softly through the trees. The sound of rustling leaves is reminiscent of the ocean. #line:01 # comment
+//#line: The wind blows softly through the trees. The sound of rustling leaves is reminiscent of the ocean. #line:01 // comment
 [[Build a fire|Fire]] #line:02
 [[Try to find your way out|Escape]] #line:03
 [[Resign to your fate|Dead]] #line:04

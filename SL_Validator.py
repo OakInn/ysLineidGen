@@ -73,15 +73,14 @@ class Validator:
     # Method which determine whether text line needs a lineid added.
     def validateLineidIsNeeded(self, line):
         """Method which determine whether text line needs a lineid added."""
-        sLine = line.replace("##", "@NotComment@")
-
+        sLine = line
         if self.idNeeded == False:
             result = False
         else:
-            if not sLine or sLine.startswith("#"):# empty line or fully commented
+            if not sLine or sLine.startswith("//"):# empty or fully commented line
                 result = False
-            elif sLine.startswith("<<"):# command
-                # go to ADDON!!! and decide do you need this line or not
+            elif sLine.startswith("<<"):# yarn spinner command designator
+                # go to ADDON!!! and decide do you need this line or not TODO
                 if not sLine.split(">>", 1)[1].strip():
                     result = False
                 elif len(sLine.split(">>", 1)) > 1 and sLine.split(">>", 1)[1].strip()[0].isalnum() == False:

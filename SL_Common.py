@@ -1,7 +1,11 @@
 # SL_Common.py
 # SetLineid common class
 
-# Read from file, backup file, write file, find files by extension functionality
+# """Functionality:
+# - Read from file
+# - Backup file
+# - Write file
+# - Find files by extension recursively"""
 
 import os
 
@@ -14,7 +18,7 @@ class Common:
     @staticmethod
     def readFile(path):
         sData = []
-        with open (path, "r") as fRead:
+        with open (path, encoding="utf8") as fRead:
             lines = fRead.readlines()
         for line in lines:
             sData.append(line.strip())
@@ -35,18 +39,24 @@ class Common:
     # Write data (text) to file line-by-line
     @staticmethod
     def writeFile(sData, path):
-        with open (path, "w") as fWrite:
+        with open (path, "w", encoding="utf8") as fWrite:
             for line in sData:
                 fWrite.write(f"{line}\n")
 
     # Creates list of file pathes
     @staticmethod
-    def filePathCollector(dirPath, fileExt):
+    def filePathCollector(dirPath, fileExts):
         pathList = []
         for root, dirs, files in os.walk(dirPath):
             for f in files:
-                if f.endswith(fileExt):
-                    filePath = dirPath + f
-                    pathList.append(filePath)
+                # check if file with any needed extension found
+                for ext in fileExts:
+                    if f.endswith(ext):
+                        # add file to list
+                        filePath = os.path.join(root, f)
+                        pathList.append(filePath)
+                        break
 
         return pathList
+
+# TODO to think about whether to restore at conflict from .fc file to initial state

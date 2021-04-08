@@ -1,7 +1,7 @@
 # SL_Common_Test.py
-# python v3.6 at least (f-string)
+# python v3.6 at least (due to f-string)
 # Tests for SL Common class
-# Functionality tests - read file, backup file, write file,
+# Functionality tests - read file, backup file, write file,\
 # list of file pathes found by extension
 
 import os
@@ -79,25 +79,21 @@ Sally: Hi. #line:305cde
         with self.subTest(f"02. {readFile} != Expected {expectedData}"):
             self.assertTrue(readFile == expectedData)
 
-
+    # Commented lines below valid for testing recursion
     def testCommon04FilePathCollector(self):
         file1 = f"{self.tempFolderPath}testFile.ttxt"
         file2 = f"{self.tempFolderPath}testWriteDataInThisFile.ttxt"
         file3 = f"{self.tempFolderPath}testFileBackup.txt.fc"
+        # file4 = os.path.join(self.tempFolderPath, "testCommon", "testWriteDataInThisFile.ttxt")
         folderPath = self.tempFolderPath
         searchFileByExtension = (".ttxt", ".fc")
 
         expectedFileList = (file1, file2, file3)
+        # expectedFileList = (file1, file2, file3, file4)
 
-        fileList = []
-        for i in range(len(searchFileByExtension)):
-            ext = searchFileByExtension[i]
-            foundFileList = Common.filePathCollector(folderPath, ext)
-            if i < len(searchFileByExtension):
-                fileList = fileList + foundFileList
-        fileList = tuple(fileList)
+        fileList = tuple(Common.filePathCollector(folderPath, searchFileByExtension))
         
         with self.subTest(f"\n00. {len(fileList)} != Expected {len(expectedFileList)}"):
             self.assertTrue(len(fileList) == len(expectedFileList))
         with self.subTest(f"\n01. {fileList} != Expected {expectedFileList}"):
-            self.assertTrue(fileList == expectedFileList)
+            self.assertTrue(sorted(fileList) == sorted(expectedFileList))
