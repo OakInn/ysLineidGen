@@ -3,13 +3,14 @@
 
 # Look through .yarn and .txt files, with text in yarn spinner compatible format.
 # Analyze each line and decide if line already has lineid, or needs it, or just skip line.
+# Skip lines which should be, or have been requested to be skipped ("#line:skip")
 # If line already has lineid:
 # - check lineid validity - it should be of hex type
 # - check lineid uniqueness through all the files
 # - check lineid length - depends on user choice:
 #       -3 or 8 byte length, or leave as is - as long as it is unique and valid
 # If lineid is absent:
-# -check whether it needs one and either skip line, or generate a new valid 
+# - check whether it needs one and either skip line, or generate a new valid 
 # and unique lineid of user chosen length (3/8 bytes)
 # - lineid is generated also on user request - when line has empty lineid tag ("#line:").
 # Though only in parts of yarn node contents
@@ -30,20 +31,18 @@ if __name__ == '__main__':
             # Validator - Common.getFilename, extract lineid, validate lineid -> conflictStorage
         # if --resolve == no
             # send data to metrics and end the program
-    generatorArguments = {"compat": "yarn", "resolve": "long", "newcompat": "yarn"}
+    generatorArguments = {"compat": "yarn", "resolve": "yarn", "newcompat": "yarn"}
 
     v = Validator()
     g = Generator(generatorArguments)
 
-    path = "D:\\Projects\\Yarn\\Sample\\SetLineid\\"
+    # path = "D:\\Projects\\Yarn\\Sample\\test\\" # TODO uncomment
+    path = "/opt/yarn/" # TODO remove
     backupPath = None
 
-    fileExt = {".txt", ".yarn"}
-    fileList = []
+    fileExts = {".yarn", ".yarn.txt"}
 
-    for ext in fileExt:
-        files = Common.filePathCollector(path, ext)
-        fileList = fileList + files
+    fileList = Common.filePathCollector(path, fileExts)
 
     print(f"File list = {fileList}\n")
 
@@ -55,7 +54,7 @@ if __name__ == '__main__':
         v.validatorProcess(f, fRead)
 
         # Terminate the program and provide all metrics, warnings and conflicts.
-        # Here or in Generator?
+        # Here or in Generator? TODO
 
         genData = g.generatorProcess(f, fRead, v)
 

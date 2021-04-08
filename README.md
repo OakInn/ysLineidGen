@@ -1,11 +1,33 @@
-## General information
+- [How to run](#how-to-run)
+  - [How to run tests (recommended)](#how-to-run-tests-recommended)
+  - [How to run (recommended)](#how-to-run-recommended)
+- [General information](#general-information)
+  - [Requirements](#requirements)
+  - [Description](#description)
+  - [INFORMATION BELOW](#information-below)
+    - [Parameter values:](#parameter-values)
+    - [Parameters:](#parameters)
+- [Project current status](#project-current-status)
+
+# How to run
+## How to run tests (recommended)
+
+docker build -t python3gametest .  
+docker run --rm python3gametest 
+
+
+## How to run (recommended)
+
+docker run --rm -v {pathToFiles}:/opt/yarn python3gametest  
+:warning: BUT before you run - READ THROUGH **INFORMATION BELOW** section.
+
+
+# General information
 
 This project is a part of Game development suite. It is dedicated to work with Yarn Spinner dialogue tool.
 **[Yarn Spinner](https://yarnspinner.dev/)** is a tool for writing game dialogues.  
-All Yarn Spinner files are subjects for game localization process. For proper localization, particular lines  
-of Yarn Spinner file should be marked for translation with a *[unique identifier](https://yarnspinner.dev/docs/unity/localisation/)*.  
-This standalone tool parses Yarn Spinner dialogue files and inserts missing localization identifiers. It detects  
-conflicts and tries to resolve them as well.
+All Yarn Spinner files are subjects for game localization process. For proper localization, particular lines of Yarn Spinner file should be marked for translation with a *[unique identifier](https://yarnspinner.dev/docs/unity/localisation/)*.  
+This standalone tool parses Yarn Spinner dialogue files and inserts missing localization identifiers. It detects conflicts and tries to resolve them as well.
 
 
 ## Requirements
@@ -20,48 +42,39 @@ conflicts and tries to resolve them as well.
 Program collects all the files in folder(s) (recursively) by file extension(s).  
 *Both folder path and file extension(s) are user specified*.  
 Creates backup copies (*WIP - Arguments*).  
-Processes data in files line-by-line. Finds all lineIDs that already exist and  
-checks:  
-1. that they are of valid hexadecimal type. If not - log as conflict.
-2. that existing lineID is unique through all the files. If not - log as conflict.
-In case user decided not to resolve existing conflicts and they were found -
-program will terminate.
+Processes data in files line-by-line. Finds all lineIDs that already exist and checks:  
+1. that they are of valid hexadecimal type.  
+   If not - log as conflict.
+2. that existing lineID is unique through all the files.  
+   If not - log as conflict.
+In case user decided not to resolve existing conflicts and they were found - program will terminate (*WIP - process termination*).
 If user defined to resolve conflicts, or there were none found - program
-will then analyze the data again. This time it will:
-1. Check if it has lineID:
-    1. If there is a lineID:
-        1. Check if it is present among the conflicts:
-            1. If among conflicts:
-                1. Look to the value of "compat" parameter and generate
-                corresponding new lineID
-            2. If not among conflicts:
-                1. Check if its length complies with "compat" parameter:
-                    1. if complies - go to the next line
-                    2. if does not comply - generate corresponding new lineID
-    2. If there is no lineID present:
-        1. Decide if the line needs it:
-            1. If does not need line ID - skip the line
-            2. If does need line ID - check "newcompat" parameter value and generate
-            corresponding new lineID
-2. Change the line in accordance with the result of step 1 above (if needed).
+will then analyze the data again. This time it will:  
+    - Check if line has lineID:
+      - if there is a lineID:
+        - check if it is present among the conflicts:
+          - if among conflicts:
+            - look to the value of "compat" parameter and generate corresponding new lineID
+          - if not among conflicts:
+            - check if its length complies with "compat" parameter:
+              - if complies - go to the next line
+              - if does not comply - generate corresponding new lineID
+      - If there is no lineID present:
+        - decide if the line needs it:
+          - if does not need line ID - skip the line
+          - if does need line ID - check "newcompat" parameter value and generate corresponding new lineID
+1. Change the line in accordance with the results of previous steps above (if needed).
 Line formatting is kept as it was.
-3. Re-write files with new data.
-4. Provide results and metrics
+4. Re-write files with new data.
+5. Provide results and metrics (*WIP*)
 
 
-## How to run the code
-
-In terminal:  
-1. **READ THROUGH INFORMATION BELOW**.
-2. navigate to folder which contains SetLineid.py file.
-3. Run command "python.exe SetLineid.py".
-
-### INFORMATION BELOW
-In SetLineid.py file there are some parameters, which should be revised:  
+## INFORMATION BELOW
+In *SetLineid.py* file there are some parameters, which should be revised:  
 1. **variable "path"** - path to the folder with files.  
-*example "C:/folderName/folderName/", "C:\\folderName\\folderName\\"*
+*example "/etc/folderName/folderName/", "C:\\folderName\\folderName\\"*
 2. **variable "fileExt"**- set/list of file extensions.  
-*example {".txt", ".yarn"}*
+*example {".yarn", ".yarn.txt"}*
 3. **generatorArguments** - parameters and their values.  
 *example {"compat": "yarn", "resolve": "long", "newcompat": "yarn"}*
 
@@ -76,12 +89,11 @@ is not used, or not applicable.
 :warning: Value *"None"* is currently not supported in any of the parameters!  
 1. **"compat"** - general compatibility.  
 **Default value** - *"yarn"*.  
-If set to *"yarn"* or *"long"* - all present lineIDs will we re-generated to  
-comply with inserted value.  
+If set to *"yarn"* or *"long"* - all present lineIDs will we re-generated to comply with inserted value.  
 If set to *"None"* - present lineIDs will stay as they are.  
 2. **"resolve"** - whether to resolve found conflicts.  
 **Default value** - *"yarn"*.  
-If "resolve" set to *"yarn"(default)* or *"long"* - generate lineID of  
+If "resolve" set to *"yarn"(default)* or *"long"* - generate lineID of 
 appropriate length (see Parameter values above).  
 If *"resolve"* set to *"None"* - if conflict are found - program should terminate  
 and inform of the problem, without setting any lineIDs.  
@@ -90,11 +102,8 @@ will be generated of a chosen length - *"yarn"(default)* or *"long"*.
 **Default value** - *"yarn"*.  
 
 
-## Project current status
+# Project current status
 
 **WIP**:
 - [ ] **Arguments** - receive parameters and their values from command line (terminal)
-- [ ] **Metrics** - general information and results.  
-        Like how many files and lines processed (total and in each file), whether  
-    there are conflicts or warnings and where to find them. General recommendations  
-    on conflicts/warnings (if present) resolutions.
+- [ ] **Metrics** - general information and results.

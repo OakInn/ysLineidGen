@@ -1,6 +1,6 @@
 # SL_Validator_Test.py
 # Tests for SL Validator class
-# python v3.6 at least (f-string)
+# python v3.6 at least (due to f-string)
 # Functionality tests - HEX type check, adding functions, 
 
 import unittest
@@ -46,7 +46,7 @@ class ValidatorTest(unittest.TestCase):
 
     def testValidator03LineidIsNeeded(self):
         text = """---
-#Player: Hey, Sally.
+//Player: Hey, Sally.
 ##Sally: Oh! Hi.
 Sally: You snuck up on me.
 Sally: Don't#do that.
@@ -112,7 +112,7 @@ I have [plural {$apples} one="an apple" other="% apples"]!
     def testValidator05Process(self):
         testFileName1 = "testValidatorProcess1.txt"
         testText1 = """
-#Player: Hey, Sally. #line:794945
+//Player: Hey, Sally. #line:794945
 ##Sally: Oh! Hi. #line:2dc39b
 Sally: You snuck up on me. #line:34de2f
 Sally: Don't#do that. #line:dcc2bc

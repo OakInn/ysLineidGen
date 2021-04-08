@@ -1,15 +1,15 @@
 # SL_Generator.py
 # Setline Generator class
-# pip install libscrc 1.3 - for CRC generation
-# Generate new lineid in CRC24 or CRC64 hex format, or decide whether to skip line
+# pip install libscrc 1.3 - for CRC generation.
+# Generate new lineid in CRC24 or CRC64 hex format, or decide whether to skip line.
 
 # Generation of new lineids is based on whether:
-#   - line contains any text that needs to be translated to another language,
+#   - line contains any text that needs to be translated to another language, \
 # and currently does not have assigned valid and unique lineid
-#   - line contains the request for lineid -> empty lineid tags - "#line: " or "#line:#"
+#   - line contains the request for lineid -> empty lineid tags in the end of the line- "#line:"
 #   - lineid used in the lines conflicts with previously used one
 #   - lineid is not a valid hex number
-#   - lineid is valid hex number, but its length does not comply with user/default
+#   - lineid is valid hex number, but its length does not comply with user/default \
 # compatibility settings.
 # example -> if we have "...#line:250d" (here lineid length is 4 characters,
 # or 2 bytes), but the default setting is that all lineids should be of a yarn
@@ -38,41 +38,39 @@ class Generator:
     # Function which should be called for lineid generation
     def generatorProcess(self, filePath, sData, validator):
         # Terminate the program and provide all metrics, warnings and conflicts
-        if self.resolve == None and len(validator.getConflictDic()) != 0:
+        if self.resolve == None and len(validator.getConflictDic()) != 0:# TODO
             pass
 
         lineN = 0# Line counter
 
         for line in sData:
-            # print(f"START ={line}")
             lineN += 1
             # Trigger between node Settings, node Content and skip lines which
-            # start with "#" sign. We don't need lineids for Yarn Spinner node
+            # start with "//" sign. We don't need lineids for Yarn Spinner node
             # Settings (===) and fully commented lines, but need for node Content (---).
             skipLine, validator.idNeeded = self.__skipLineFilter(line)
 
             if skipLine:
                 continue
             else:
-                # print(f"2nd stage ={line}")
-                # Decide between skipping of generating lineid for line inside
+                # Decide between skipping or generating lineid for line inside
                 # yarn spinner node content
                 line, skipLine = self.__lineFilter(filePath, lineN, line, validator)
                 if skipLine:
                     continue
-            # print(f"FINISH ={line}")
             sData[lineN-1] = line
 
         return sData
 
     # Skip fully commented and lines in yarn node Settings area - blocks of lines 
-    # between "===" and "---" 
+    # between "===" and "---" . And skip lines which are requested to be skipped
     def __skipLineFilter(self, line):
         sLine = line.strip()
         skip = True
         vIdNeeded = False
+        lineid = Extractor.extractLineid(sLine)
 
-        if not sLine or sLine.startswith("#"):
+        if not sLine or sLine.startswith("//") or lineid == "skip":
             pass
         elif sLine.startswith("---"):
             vIdNeeded = True
@@ -97,7 +95,7 @@ class Generator:
 
         if lineid == None:
             line, skip = self.__lineidAbsent(filePath, lineN, line, validator)
-            
+
         else:
             line, skip = self.__lineidPresent(filePath, lineN, line, validator, lineid)
         
@@ -109,15 +107,7 @@ class Generator:
 
         if validator.validateLineidIsNeeded(sLine):
             gLineid = self.__generateLineid(filePath, lineN, sLine, self.newcompat, validator)
-            comment = Extractor.extractComment(line)
-            # print("comment = " + comment)
-            if comment == "":
-                # print("01")
-                line = f"{line} #line:{gLineid}"
-            else:
-                # print("02")
-                commentSplit = line.split(comment, 1)
-                line = commentSplit[0].replace("#", f"#line:{gLineid} {comment}", 1)
+            line = f"{line} #line:{gLineid}"
             skip = False
         else:
             skip = True
@@ -128,13 +118,13 @@ class Generator:
     def __lineidPresent(self, filePath, lineN, line, validator, lineid):
         sLine = line.strip()
         # Check and resolve existing conflicts. Only if (self.resolve != None).
-        # If "None", and there are conflicts - program should terminate
+        # If "None", and there are conflicts - program should terminate \
         # after Validator and before Generator class.
         conflicts = validator.getConflictDic()
         if self.resolve != None and f"{filePath}_Line{lineN}" in conflicts:
             gLineid = self.__generateLineid(filePath, lineN, sLine, self.resolve, validator)
             skip = False
-        # Validate present lineid comply to user choices.
+        # Validate that present lineid comply to user choices.
         # If current lineid valid and unique - leave it untouched
         elif Validator.validateHexLength(lineid) == self.compat or self.compat == False:
             skip = True
@@ -147,7 +137,7 @@ class Generator:
 
         return line, skip
         
-    # Cycle of generating lineid until it is of valid length and unique
+    # Cycle of generating lineid until it is of valid length and is unique
     def __generateLineid(self, filePath, lineN, lineText, crcType, validator):
         tryN = 0
        
@@ -157,7 +147,6 @@ class Generator:
         while lineid in usedLineids or Validator.validateHexLength(lineid) != crcType:
             tryN += 1
             lineid = self.__generateCrc(filePath, lineN, lineText, crcType, tryN)
-            # print(f"{tryN} = {lineid}") if tryN > 1 else print("OK")
         # Adding to dictionary of used lineids for further conflict identification
         validator.addToLineidUsedDic(lineid, f"{filePath}_Line{lineN}")#?
 
