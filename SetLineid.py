@@ -106,13 +106,16 @@ if __name__ == '__main__':
             print(f"File ({f}) - Conflicts found\n")
             conflictFiles += 1
             continue
+        elif g.resolve is None and len(v.getConflictDic()) != 0:
+            print(f"File ({f}) [conflict] - OK\n")
+            continue
+        else:
+            genData = g.generatorProcess(f, fRead, v)
 
-        genData = g.generatorProcess(f, fRead, v)
+            c.writeFile(genData, f)
 
-        c.writeFile(genData, f)
-
-        print(f"File ({f}) - OK\n\
-        processed {v.lineNFile} lines\n")
+            print(f"File ({f}) [generated] - OK\n\
+            processed {v.lineNFile} lines\n")
 
     print(f"Total files - {len(fileList)}")
     print(f"Total files processed - {fileN}")
