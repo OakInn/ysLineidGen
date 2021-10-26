@@ -11,8 +11,9 @@ from SL_Common import Common
 
 class CommonTest(unittest.TestCase):
     def setUp(self):
+        self.common = Common()
         self.testFileName = "testFile.ttxt"
-        self.tempFolderPath = f"{gettempdir()}/"
+        self.tempFolderPath = gettempdir()
         self.testText = """
 title: Start
 ---
@@ -27,22 +28,27 @@ Player: Hey. #line:a8e70c
 Sally: Hi. #line:305cde
 <<endif>>
 ==="""
-        self.testFilePath = f"{self.tempFolderPath}{self.testFileName}"
-        self.testFileCreate = Common.writeFile(self.testText.split("\n"), f"{self.testFilePath}")
+        self.testFilePath = os.path.join(self.tempFolderPath, self.testFileName)
+        self.testFileCreate = self.common.writeFile(self.testText.split("\n"), f"{self.testFilePath}")
+
+    def tearDown(self) -> None:
+        file = f"{self.testFilePath}.fc_1.fc"
+        if os.path.exists(file):
+            os.remove(file)
+        return super().tearDown()
 
 
     def testCommon01Backup(self):
         fileForBackup = self.testFilePath
-        backupPath = f"{self.tempFolderPath}testFileBackup.txt.fc"
+        backupPath = self.tempFolderPath
 
-        expectedPath = f"{self.tempFolderPath}testFileBackup.txt.fc"
-        
-        backup = Common.backupFile(fileForBackup, backupPath)
+        expectedPath = os.path.join(self.tempFolderPath, f"{self.testFileName}.fc")
+        backup = self.common.backupFile(fileForBackup, backupPath)
 
         with self.subTest(f"00. File exist - {expectedPath}"):
             self.assertTrue(os.path.exists(f"{expectedPath}"))
-        with self.subTest(f"01. Content is the same - {Common.readFile(fileForBackup)}"):
-            self.assertTrue(Common.readFile(backupPath))
+        with self.subTest(f"01. Content is the same - {self.common.readFile(fileForBackup)}"):
+            self.assertTrue(self.common.readFile(expectedPath))
 
 
     def testCommon02ReadFile(self):
@@ -52,7 +58,7 @@ Sally: Hi. #line:305cde
         expectedTextInLine8 = "Sally: Don't do that. #line:dcc2bc"
         expectedData = self.testText.split("\n")
 
-        readFile = Common.readFile(filepath)
+        readFile = self.common.readFile(filepath)
 
         with self.subTest(f"00. {len(readFile)} != Expected {expectedNLines}"):
             self.assertTrue(len(readFile) == expectedNLines)
@@ -64,13 +70,13 @@ Sally: Hi. #line:305cde
 
     def testCommon03WriteFile(self):
         writeData = self.testText.split("\n")
-        writePath = f"{self.tempFolderPath}testWriteDataInThisFile.ttxt"
+        writePath = f"{self.tempFolderPath}/testWriteDataInThisFile.ttxt"
 
         expectedData = writeData
         expectedlen = len(writeData)#14
 
-        writeFile = Common.writeFile(writeData, writePath)
-        readFile = Common.readFile(writePath)
+        writeFile = self.common.writeFile(writeData, writePath)
+        readFile = self.common.readFile(writePath)
 
         with self.subTest(f"00. No file - {writePath}"):
             self.assertTrue(os.path.exists(str(writePath)))
@@ -79,19 +85,19 @@ Sally: Hi. #line:305cde
         with self.subTest(f"02. {readFile} != Expected {expectedData}"):
             self.assertTrue(readFile == expectedData)
 
-    # Commented lines below valid for testing recursion
+    # Commented lines below valid for testing recursion.
     def testCommon04FilePathCollector(self):
-        file1 = f"{self.tempFolderPath}testFile.ttxt"
-        file2 = f"{self.tempFolderPath}testWriteDataInThisFile.ttxt"
-        file3 = f"{self.tempFolderPath}testFileBackup.txt.fc"
+        file1 = os.path.join(self.tempFolderPath, "testFile.ttxt")
+        file2 = os.path.join(self.tempFolderPath, "testWriteDataInThisFile.ttxt")
+        file3 = os.path.join(self.tempFolderPath, "testFile.ttxt.fc")
         # file4 = os.path.join(self.tempFolderPath, "testCommon", "testWriteDataInThisFile.ttxt")
         folderPath = self.tempFolderPath
         searchFileByExtension = (".ttxt", ".fc")
 
-        expectedFileList = (file1, file2, file3)
+        expectedFileList = (file1, file3, file2)
         # expectedFileList = (file1, file2, file3, file4)
 
-        fileList = tuple(Common.filePathCollector(folderPath, searchFileByExtension))
+        fileList = tuple(self.common.filePathCollector(folderPath, searchFileByExtension))
         
         with self.subTest(f"\n00. {len(fileList)} != Expected {len(expectedFileList)}"):
             self.assertTrue(len(fileList) == len(expectedFileList))

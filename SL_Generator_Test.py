@@ -155,7 +155,7 @@ I have [plural {$apples} one="an apple" other="% apples"]! #line:20
 
         sData = data.split("\n")
 
-        expectedData = ""
+        # expectedData = ""
 
 #=================================
         self.v.validatorProcess(filePath, sData)

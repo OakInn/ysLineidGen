@@ -1,0 +1,34 @@
+syntax = "proto2";
+
+message protoargs
+{
+    required string SRC             = 1;                                    // Path to folder which contain yarn spinner files
+
+    optional string BCKP            = 2 [default = ""];                     // Path to folder for backing up files in SRC 
+
+    optional string ext	            = 3 [default = ".txt_.yarn_.yarn.txt"]; // Extensions of files for procession
+
+    optional string compat          = 4 [default = ""];                     // Initial line tag length check. ""/"yarn"/"long"
+
+    optional string resolve         = 5 [default = ""];                     // Line tag length for conflict resolve. ""/"yarn"/"long"
+
+    optional string newcompat       = 6 [default = "yarn"];                 // Newly generated line tag length. "yarn"/"long"
+    
+    optional string loglevel        = 100 [default = "INFO"];               // Log level, possible values [ERROR|WARNING|INFO|DEBUG]
+}//protoargs
+
+message protoargs_links
+{
+    optional string BCKP            = 7 [default = "BCKP"];
+
+    optional string ext             = 8 [default = "ext"];
+
+    optional string compat          = 9 [default = "compat"];
+
+    optional string resolve         = 10 [default = "resolve"];
+
+    optional string newcompat       = 11 [default = "newcompat"];
+
+    optional string loglevel        = 12 [default = "loglevel"];
+
+}//protoargs_links
