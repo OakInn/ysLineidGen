@@ -14,10 +14,14 @@ class Extractor:
 
     # Extract lineid from the line. If absent - return None
     @staticmethod
-    def extractLineid(sLine):
-        sLine = sLine.strip()
+    def extractLineid(line):
+        sLine = line.strip()
+        # Next two lines mostly needed for tests
         if sLine.find("#line:") == -1 or sLine.startswith("//"):
             return None
+        # Comment is the last element in line
+        if sLine.find("//") != -1:
+            sLine = sLine.split("//", 1)[0].strip()
 
         lineidSplit = sLine.split("#line:")
         for i in ["//", " "]:# TODO these are not all variants

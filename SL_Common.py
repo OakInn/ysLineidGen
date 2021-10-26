@@ -4,8 +4,11 @@
 # """Functionality:
 # - Read from file
 # - Backup file
-# - Write file
+# - Write to file
 # - Find files by extension recursively"""
+# - WIP - Restore files from backup
+# - Rules for lines to skip
+# - Rules for line blocks to skip
 
 import os
 
@@ -21,17 +24,27 @@ class Common:
         with open (path, encoding="utf8") as fRead:
             lines = fRead.readlines()
         for line in lines:
-            sData.append(line.strip())
+            sData.append(line.strip("\n"))
         return sData
 
     # Backup files without overwriting existing ones (hording), if present
     @staticmethod
     def backupFile(path, backupPath):
         tryN = 1
+        fileName = os.path.basename(path)
         if backupPath == None or backupPath == "":
-            backupPath = f"{path}.fc"
+            backupPath = f"{path}"
+        else:
+            backupPath = os.path.normpath(f"{backupPath}/{fileName}.fc")
+        
+        backupPathCopy = backupPath
+        
         while os.path.exists(backupPath):
-            backupPath = f"{path}_{tryN}.fc"
+            if os.path.isdir(backupPath):
+                backupPath = os.path.normpath(f"{backupPathCopy}/{fileName}_{tryN}.fc")
+            elif os.path.isfile(backupPath):
+                backupPath = os.path.normpath(f"{backupPathCopy}_{tryN}.fc")
+                
             tryN += 1
         fRead = Common.readFile(path)
         Common.writeFile(fRead, backupPath)
@@ -59,4 +72,58 @@ class Common:
 
         return pathList
 
-# TODO to think about whether to restore at conflict from .fc file to initial state
+    # Default/Simple/Basic line skip selector 
+    @staticmethod
+    def skipLinesDefaultSelector(line: str) -> bool:
+        skipLine = False
+        sLine = line.strip()
+
+        # As Comment/Lore should be the last element, \
+        # any LineTag there should be neglected.
+        if sLine.startswith("//"):
+            skipLine = True
+        elif sLine.find("//") != -1:
+            sLine = sLine.split("//", 1)[0].strip()
+
+        if skipLine or not sLine or sLine.find("#line:skip") != -1 or sLine == "---" or sLine == "===":
+            skipLine = True
+
+        return skipLine
+
+
+    # Text block skip selector 
+    @staticmethod
+    def skipBlockSelector(line: str, skipTrigger: bool, boxTrigger: bool) -> bool:
+        sLine = line.strip()
+        skip = Common.skipLinesDefaultSelector(line)
+        vIdNeeded = False
+
+        # <<box>> block
+        if sLine.startswith("<<endbox>>"):
+            boxTrigger = False
+            skipTrigger = False
+        elif sLine.startswith("<<box>>"):
+            if sLine.startswith("<<box>>") and boxTrigger:
+                pass
+            else:
+                boxTrigger = True
+                skipTrigger = False
+
+        # YarnSpinner node body block
+        if not boxTrigger:
+            if sLine.startswith("---"):
+                vIdNeeded = True
+                skipTrigger = False
+            elif sLine.startswith("==="):
+                skipTrigger = True
+                vIdNeeded = False
+            else:
+                if not skipTrigger:
+                    vIdNeeded = True
+        else:
+            if skip:
+                skipTrigger = True
+            else:
+                vIdNeeded = True
+
+        return (vIdNeeded, skipTrigger, boxTrigger)

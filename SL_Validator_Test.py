@@ -7,13 +7,14 @@ import unittest
 from SL_Validator import Validator
 from tempfile import gettempdir
 from SL_Common import Common
-from SL_Generator import Generator
+# from SL_Generator import Generator
 
 
 class ValidatorTest(unittest.TestCase):
     def setUp(self):
         self.tempFolderPath = f"{gettempdir()}/"
         self.validator = Validator()
+        self.common = Common()
 
 
     def testValidator01HexType(self):
@@ -23,7 +24,7 @@ class ValidatorTest(unittest.TestCase):
         
         result = {}
         for i in lineId:
-            result[i] = Validator.validateHexType(i)
+            result[i] = self.validator.validateHexType(i)
             with self.subTest(f"{i}:{result[i]} != Expected {i}:{expectedResult[i]}"):
                 self.assertTrue(result[i] == expectedResult[i])
 
@@ -35,7 +36,7 @@ class ValidatorTest(unittest.TestCase):
         result = []
         index = 0
         for i in lineids:
-            result.append(Validator.validateHexLength(i))
+            result.append(self.validator.validateHexLength(i))
             with self.subTest(f"{expectedResult[index]} = {result[index]}"):
                 self.assertTrue(expectedResult[index] == result[index])
             index +=1
@@ -68,13 +69,13 @@ I have [plural {$apples} one="an apple" other="% apples"]!
 <<set $monster to "your own hubris">>You<< accidentally stab yourself with the rock.>>
 ==="""
 
-        expectedResult = [False, True, True, True, True, True, False, True,
+        expectedResult = [True, True, True, True, True, False, True,
         False, False, False, False, False, True, True, True, True, True]
 
         result = []
         index = 0
         for line in text.split("\n"):
-            if len(line) == 0:
+            if len(line) == 0 or line.startswith("//"):
                 continue
             elif line.strip().startswith("---"):
                 self.validator.idNeeded = True
@@ -82,7 +83,7 @@ I have [plural {$apples} one="an apple" other="% apples"]!
             elif line.strip().startswith("==="):
                 self.validator.idNeeded = False
                 continue
-            result.append(self.validator.validateLineidIsNeeded(line))
+            result.append(self.validator.validateLineidIsNeeded(line, False))
             with self.subTest(f"{line}:{expectedResult[index]} = {result[index]}"):
                 self.assertTrue(expectedResult[index] == result[index])
             index +=1
@@ -95,18 +96,18 @@ I have [plural {$apples} one="an apple" other="% apples"]!
 
     # Test Add functions
     def testValidator04AddFunctions(self):
-        v = Validator()
+        # v = Validator()
         key = "key"
         value = "value"
 
         expectedLineidDic = expectedConflictDic = {"key0":"value0", "key1":"value1", "key2":"value2"}
         for i in range(3):
-            v.addToLineidUsedDic(f"{key}{i}", f"{value}{i}")
-            v.addToConflictDic(f"{key}{i}", f"{value}{i}")
-        with self.subTest(f"{v.lineidUsedDic} != {expectedLineidDic}"):
-            self.assertTrue(v.lineidUsedDic == expectedLineidDic)
-        with self.subTest(f"{v.conflictDic} != {expectedConflictDic}"):
-            self.assertTrue(v.conflictDic == expectedConflictDic)
+            self.validator.addToLineidUsedDic(f"{key}{i}", f"{value}{i}")
+            self.validator.addToConflictDic(f"{key}{i}", f"{value}{i}")
+        with self.subTest(f"{self.validator.lineidUsedDic} != {expectedLineidDic}"):
+            self.assertTrue(self.validator.lineidUsedDic == expectedLineidDic)
+        with self.subTest(f"{self.validator.conflictDic} != {expectedConflictDic}"):
+            self.assertTrue(self.validator.conflictDic == expectedConflictDic)
 
 
     def testValidator05Process(self):
@@ -120,7 +121,7 @@ Player: Hey. #line:a8e70c
 Sally: Hi. #line:305cde
 ==="""
         testFilePath1 = f"{self.tempFolderPath}{testFileName1}"
-        Common.writeFile(testText1.split("\n"), f"{testFilePath1}")
+        self.common.writeFile(testText1.split("\n"), f"{testFilePath1}")
         #=========================================
         testFileName2 = "testValidatorProcess2.txt"
         testText2 = """
@@ -132,12 +133,12 @@ Player: Hey. #line:a8e70d
 Sally: Hi. #line:305cde
 ==="""
         testFilePath2 = f"{self.tempFolderPath}{testFileName2}"
-        Common.writeFile(testText2.split("\n"), f"{testFilePath2}")
+        self.common.writeFile(testText2.split("\n"), f"{testFilePath2}")
 
 
         pathList = [testFilePath1, testFilePath2]
         for p in pathList:
-            sData = Common.readFile(p)
+            sData = self.common.readFile(p)
             self.validator.validatorProcess(p, sData)
 
 
@@ -175,23 +176,23 @@ Sally: Hi. #line:305cde
 
 
     def testValidator06Getters(self):
-        v = Validator()
+        # v = Validator()
 
         expectedEmptyDic = 0
         expectedEmptyDic2 = {}
-        with self.subTest(f"{v.getConflictDic()} != Expected {expectedEmptyDic2}"):
-            self.assertEqual(v.getConflictDic(), expectedEmptyDic2)
-        with self.subTest(f"{len(v.getLineidUsedDic())} != Expected {expectedEmptyDic}"):
-            self.assertEqual(len(v.getLineidUsedDic()), expectedEmptyDic)
+        with self.subTest(f"{self.validator.getConflictDic()} != Expected {expectedEmptyDic2}"):
+            self.assertEqual(self.validator.getConflictDic(), expectedEmptyDic2)
+        with self.subTest(f"{len(self.validator.getLineidUsedDic())} != Expected {expectedEmptyDic}"):
+            self.assertEqual(len(self.validator.getLineidUsedDic()), expectedEmptyDic)
 
         expectedLineidDic = {"lineid1":"lineid1", "lineid2":"lineid2", "lineid3":"lineid3"}
         for i in range(1, 4):
-            v.lineidUsedDic[f"lineid{i}"] = f"lineid{i}"
-        with self.subTest(f"{v.getLineidUsedDic()} != Expected {expectedLineidDic}"):
-            self.assertEqual(v.getLineidUsedDic(), expectedLineidDic)
+            self.validator.lineidUsedDic[f"lineid{i}"] = f"lineid{i}"
+        with self.subTest(f"{self.validator.getLineidUsedDic()} != Expected {expectedLineidDic}"):
+            self.assertEqual(self.validator.getLineidUsedDic(), expectedLineidDic)
         
         expectedConflictDic = {"conflict1":"conflict1", "conflict2":"conflict2", "conflict3":"conflict3"}
         for i in range(1, 4):
-            v.conflictDic[f"conflict{i}"] = f"conflict{i}"
-        with self.subTest(f"{v.getConflictDic()} != Expected {expectedConflictDic}"):
-            self.assertEqual(v.getConflictDic(), expectedConflictDic)
+            self.validator.conflictDic[f"conflict{i}"] = f"conflict{i}"
+        with self.subTest(f"{self.validator.getConflictDic()} != Expected {expectedConflictDic}"):
+            self.assertEqual(self.validator.getConflictDic(), expectedConflictDic)

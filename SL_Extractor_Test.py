@@ -11,7 +11,7 @@ from SL_Extractor import Extractor
 
 class ExtractorTest(unittest.TestCase):
     def setUp(self):
-        pass
+        self.extract = Extractor()
 
     def test01ExtractLineid(self):
         sData = """
@@ -43,14 +43,19 @@ class ExtractorTest(unittest.TestCase):
         author: phrase #line:000001 #line: // comment
         author: phrase #line:// comment #line:"""
 
-        expectedLineid = [None, None, None, "abcd12", None, "ab01", None,\
-            "abcd17", None, None, None, None, None,\
-            None, "000001", "000001", "000001", None, "000001", None, None, None, None,\
-            "000002", "000002", None, None, ""]
+        # expectedLineid = [None, None, None, "abcd12", None, "ab01", None,\
+        #     "abcd17", None, None, None, None, None,\
+        #     None, "000001", "000001", "000001", None, "000001", None, None, None, None,\
+        #     "000002", "000002", None, None, ""]
 
+        expectedLineid = [None, None, None, "abcd12", "abcd13", "ab01", "abcd14",\
+            "abcd17", "abcd18", None, None, "", "da23", None,\
+            "000001", "000001", "000001", "000001", None, None, None, "000002", "000002", None,\
+            "000001", "", "", ""]
+       
         for i in range(len(expectedLineid)):
-            lineid = Extractor().extractLineid(sData.split("\n")[i])
-            with self.subTest(f"{lineid} != Expected {expectedLineid[i]}"):
+            lineid = self.extract.extractLineid(sData.split("\n")[i])
+            with self.subTest(str(sData.split("\n")[i]) + "\n" +f"{lineid} != Expected {expectedLineid[i]}"):
                 self.assertTrue(lineid == expectedLineid[i])
 
     
@@ -97,6 +102,6 @@ class ExtractorTest(unittest.TestCase):
         " comment", " comment", " comment ", " comment ", " comment", " comment", " comment "]
 
         for i in range(len(expectedComment)):
-            comment = Extractor.extractComment(sData.split("\n")[i])
+            comment = self.extract.extractComment(sData.split("\n")[i])
             with self.subTest(f"line{i+1}:{comment} != Expected {expectedComment[i]}"):
                 self.assertTrue(comment == expectedComment[i])

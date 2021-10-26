@@ -13,7 +13,7 @@ COPY . /home/git/SetLineid
 # line generator tests
 CMD python3 /home/git/SetLineid/Test_SL.py
 
-# run lines generator
-# CMD python3 /home/git/SetLineid/SetLineid.py
-
+# run lines generator script.
+#    Replace curly brackets parts with corresponding data.
+# CMD python3 /home/git/SetLineid/SetLineid.py /opt/yarn --BCKP /opt/backup
 

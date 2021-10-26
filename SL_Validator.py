@@ -13,34 +13,38 @@ class Validator:
     def __init__(self):
         self.lineNAll = 0 # total amount of lines through all processed files
         self.lineNFile = 0 # counter of lines in currently processed file
+        self.conflict = 0 # Conflict indicator for currently processed file (needed for metrics)
         self.conflictN = 0 # total amount of conflicts through all processed files
         self.conflictDic = {} # dictionary of found conflicts
         self.lineidUsedDic = {} # dictionary of all unique lineids used in processed files
         self.idNeeded = False # general trigger which indicates if line needs lineid
+        self.extract = Extractor()
         
     # Function which should be called for line validation.
     # Extract lineid, validate if it is hex number, validate lineid conflict
     def validatorProcess(self, filePath, sData):
         self.lineNFile = 0
+        self.conflict = False # Reset conflict indicator state
 
         for sLine in sData:
             self.lineNFile += 1
 
-            lineid = Extractor.extractLineid(sLine)
+            lineid = self.extract.extractLineid(sLine)
 
             if lineid == None or not lineid:
                 continue
-            hexValid = Validator.validateHexType(lineid)
+            hexValid = self.validateHexType(lineid)
             if hexValid:
                 self.__validateConflict(lineid, filePath)
 
         self.lineNAll = self.lineNAll + self.lineNFile
 
-    # Validate if conflict present and writes either into conflict dictionary
+    # Validate if conflict present and write either into conflict dictionary
     # or into the dictionary of used unique lineids.
     def __validateConflict(self, lineid, filePath):
         if lineid in self.lineidUsedDic:
             self.addToConflictDic(f"{filePath}_Line{self.lineNFile}", f"conflict with {self.lineidUsedDic[lineid]}")
+            self.conflict = True
         else:
             self.addToLineidUsedDic(lineid, f"{filePath}_Line{self.lineNFile}")
 
@@ -71,26 +75,30 @@ class Validator:
         return self.lineidUsedDic
 
     # Method which determine whether text line needs a lineid added.
-    def validateLineidIsNeeded(self, line):
+    def validateLineidIsNeeded(self, sLine: str, boxTrigger: bool) -> bool:
         """Method which determine whether text line needs a lineid added."""
-        sLine = line
         if self.idNeeded == False:
             result = False
+        elif self.extract.extractLineid(sLine) == "": # Handle "Requested LineTag"
+            result = True
         else:
-            if not sLine or sLine.startswith("//"):# empty or fully commented line
-                result = False
-            elif sLine.startswith("<<"):# yarn spinner command designator
-                # go to ADDON!!! and decide do you need this line or not TODO
-                if not sLine.split(">>", 1)[1].strip():
-                    result = False
-                elif len(sLine.split(">>", 1)) > 1 and sLine.split(">>", 1)[1].strip()[0].isalnum() == False:
+            if boxTrigger or not boxTrigger:
+                if sLine.startswith("<<"):# yarn spinner command designator
+                    if not sLine.split(">>", 1)[1].strip():
+                        result = False
+                    elif len(sLine.split(">>", 1)) > 1 and sLine.split(">>", 1)[1].strip()[0].isalnum() == False:
+                        result = False
+                    else:
+                        result = True
+                elif sLine.startswith("[["):# choice options
+                    result = (sLine.find("|") != -1)
+                else:
+                    result = True
+            else: # Special rules for "<<box>>" section.
+                if sLine == "<<box>>" or sLine == "<<endbox>>" or sLine.find("#line:skip") != -1:
                     result = False
                 else:
                     result = True
-            elif sLine.startswith("[["):# choice options
-                result = (sLine.find("|") != -1)
-            else:
-                result = True
 
         return result
 
